@@ -1,5 +1,5 @@
 {
-  "name": "3foto-transfer",
+  "name": "transfer",
   "scripts": {
     "build": "npx projen build",
     "bundle": "npx projen bundle",
@@ -7,6 +7,7 @@
     "compile": "npx projen compile",
     "default": "npx projen default",
     "deploy": "npx projen deploy",
+    "deploy:watch": "npx projen deploy:watch",
     "destroy": "npx projen destroy",
     "diff": "npx projen diff",
     "eject": "npx projen eject",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
+    "@types/aws-lambda": "^8.10.146",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8",
@@ -43,7 +45,9 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.1.0",
-    "constructs": "^10.0.5"
+    "aws-lambda": "^1.0.7",
+    "constructs": "^10.0.5",
+    "hono": "^4.6.14"
   },
   "license": "Apache-2.0",
   "publishConfig": {

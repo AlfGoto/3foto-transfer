@@ -83,6 +83,14 @@
         }
       ]
     },
+    "deploy:watch": {
+      "name": "deploy:watch",
+      "steps": [
+        {
+          "exec": "npx projen deploy:watch"
+        }
+      ]
+    },
     "destroy": {
       "name": "destroy",
       "description": "Destroys your cdk app in the AWS cloud",
@@ -214,13 +222,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/jest,@types/node,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/aws-lambda,@types/jest,@types/node,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript,aws-lambda,hono"
         },
         {
           "exec": "npm install"
         },
         {
-          "exec": "npm update @stylistic/eslint-plugin @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript aws-cdk-lib constructs"
+          "exec": "npm update @stylistic/eslint-plugin @types/aws-lambda @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript aws-cdk-lib aws-lambda constructs hono"
         },
         {
           "exec": "npx projen"

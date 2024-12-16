@@ -6,6 +6,10 @@
       "type": "build"
     },
     {
+      "name": "@types/aws-lambda",
+      "type": "build"
+    },
+    {
       "name": "@types/jest",
       "type": "build"
     },
@@ -76,8 +80,16 @@
       "type": "runtime"
     },
     {
+      "name": "aws-lambda",
+      "type": "runtime"
+    },
+    {
       "name": "constructs",
       "version": "^10.0.5",
+      "type": "runtime"
+    },
+    {
+      "name": "hono",
       "type": "runtime"
     }
   ],

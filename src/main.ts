@@ -1,23 +1,23 @@
-import { App, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import { Transfer } from "./transfer";
 
-export class MyStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps = {}) {
-    super(scope, id, props);
-
-    // define resources here...
-  }
-}
-
-// for development, use account/region from cdk cli
-const devEnv = {
-  account: process.env.CDK_DEFAULT_ACCOUNT,
-  region: process.env.CDK_DEFAULT_REGION,
+const env = {
+  account: process.env.CDK_DEPLOY_ACCOUNT ?? process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.CDK_DEPLOY_REGION ?? process.env.CDK_DEFAULT_REGION,
 };
 
-const app = new App();
+const app = new cdk.App();
 
-new MyStack(app, '3foto-transfer-dev', { env: devEnv });
-// new MyStack(app, '3foto-transfer-prod', { env: prodEnv });
+const serviceName = app.node.tryGetContext("serviceName") as string | undefined;
+if (!serviceName) {
+  throw new Error("Missing context: serviceName");
+}
+
+const stage = app.node.tryGetContext("stage") as string | undefined;
+if (!stage) {
+  throw new Error("Missing context: stage");
+}
+
+new Transfer(app, `${stage}-${serviceName}`, { env, stage, serviceName });
 
 app.synth();
