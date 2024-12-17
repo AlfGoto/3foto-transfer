@@ -4,6 +4,7 @@ import * as apigw from "aws-cdk-lib/aws-apigatewayv2"
 import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as ln from "aws-cdk-lib/aws-lambda-nodejs"
+import * as levs from "aws-cdk-lib/aws-lambda-event-sources"
 import * as logs from "aws-cdk-lib/aws-logs"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { Construct } from "constructs"
@@ -39,6 +40,32 @@ export class Transfer extends cdk.Stack {
       ],
     })
 
+    const trigger = new ln.NodejsFunction(this, "Trigger", {
+      entry: "src/functions/trigger.ts",
+      environment: {
+        STAGE: props.stage,
+        SERVICE: props.serviceName,
+        TABLE_NAME: table.tableName,
+        BUCKET_NAME: bucket.bucketName,
+      },
+      runtime: lambda.Runtime.NODEJS_18_X,
+      architecture: lambda.Architecture.ARM_64,
+      logRetention: logs.RetentionDays.THREE_DAYS,
+      tracing: lambda.Tracing.ACTIVE,
+      timeout: cdk.Duration.minutes(1),
+      memorySize: 512,
+      events: [
+        new levs.DynamoEventSource(table, {
+          startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+          bisectBatchOnError: true,
+          reportBatchItemFailures: true,
+          retryAttempts: 3,
+        }),
+      ],
+    })
+    table.grantReadWriteData(trigger)
+    bucket.grantReadWrite(trigger)
+
     const api = new apigw.HttpApi(this, "TransferApi", {
       corsPreflight: {
         allowHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
@@ -48,7 +75,7 @@ export class Transfer extends cdk.Stack {
       },
     })
     const apiFunction = new ln.NodejsFunction(this, "ApiFunction", {
-      entry: `${__dirname}/api/index.ts`,
+      entry: `${__dirname}/functions/api/index.ts`,
       environment: {
         STAGE: props.stage,
         SERVICE: props.serviceName,

@@ -1,10 +1,11 @@
 import { Hono } from "hono"
 import { handle } from "hono/aws-lambda"
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
-import { LinkEntity } from "../core/link/link.entity"
-import { PutItemCommand } from "dynamodb-toolbox"
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import { LinkEntity } from "../../core/link/link.entity"
+import { GetItemCommand, PutItemCommand } from "dynamodb-toolbox"
 import { addDays } from "date-fns"
 import { v4 as uuid } from "uuid"
+import { Readable } from "stream"
 
 const app = new Hono()
 const s3 = new S3Client({})
@@ -70,7 +71,46 @@ app.post("/", async (c) => {
 
 app.get("/:id", async (c) => {
   const { id } = c.req.param()
-  return c.text(id)
+  const { Item } = await LinkEntity.build(GetItemCommand)
+    .key({ id: id })
+    .options({ consistent: true })
+    .send()
+
+  console.log(id)
+  if (!Item || !Item.keys) {
+    return c.json(
+      { error: "Invalid item or keys not found", Item: Item, ItemKeys: Item?.keys },
+      400
+    )
+  }
+  const keys: string[] = Item.keys
+
+  const files = await Promise.all(
+    keys.map(async (key) => {
+      const command = new GetObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: `${id}/${key}`,
+      })
+
+      const s3Response = await s3.send(command)
+
+      const stream = s3Response.Body as Readable
+      const chunks: Buffer[] = []
+      for await (const chunk of stream) {
+        chunks.push(chunk)
+      }
+
+      const fileContent = Buffer.concat(chunks).toString("base64")
+
+      return {
+        name: key.split("/").pop() || key,
+        type: s3Response.ContentType || "application/octet-stream",
+        url: `data:${s3Response.ContentType};base64,${fileContent}`,
+      }
+    })
+  )
+
+  return c.json(files)
 })
 
 export const handler = handle(app)

@@ -45,6 +45,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "@aws-lambda-powertools/batch": "^2.11.0",
     "@aws-sdk/client-dynamodb": "^3.712.0",
     "@aws-sdk/client-s3": "^3.712.0",
     "@aws-sdk/lib-dynamodb": "^3.712.0",

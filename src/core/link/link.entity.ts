@@ -5,13 +5,13 @@ export const LinkEntity = new Entity({
   name: "Link",
   schema: schema({
     id: string().key(),
-    date: string().key(), // ISO
-    keys: list(string()).optional(),
+    date: string(), // ISO
+    keys: list(string()),
     ttl: number(),
   }),
-  computeKey: ({ date, id }: { date: string; id: string }) => ({
+  computeKey: ({ id }: { id: string }) => ({
     PK: `LINK#${id}`,
-    SK: `DATE#${date}`,
+    SK: `LINK`,
   }),
   table: TransferTable,
 })

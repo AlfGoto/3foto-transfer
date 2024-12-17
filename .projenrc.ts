@@ -7,6 +7,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   projenrcTs: true,
 
   deps: [
+    "@aws-lambda-powertools/batch",
     "@aws-sdk/client-dynamodb",
     "@aws-sdk/lib-dynamodb",
     "aws-cdk-lib",
