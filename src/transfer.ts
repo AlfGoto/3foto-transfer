@@ -57,14 +57,14 @@ export class Transfer extends cdk.Stack {
         TABLE_NAME: table.tableName,
       },
       bundling: { minify: true, sourceMap: true },
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       architecture: lambda.Architecture.ARM_64,
       logRetention: logs.RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
     })
-    bucket.grantRead(apiFunction)
+    bucket.grantReadWrite(apiFunction)
     table.grantReadWriteData(apiFunction)
 
     const apiIntegration = new integrations.HttpLambdaIntegration("ApiIntegration", apiFunction)

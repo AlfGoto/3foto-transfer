@@ -27,6 +27,7 @@
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
     "@types/aws-lambda": "^8.10.146",
+    "@types/formidable": "^3.4.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8",

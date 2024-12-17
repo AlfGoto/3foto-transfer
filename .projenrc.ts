@@ -18,7 +18,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     "uuid",
   ],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
-  devDeps: ["@types/aws-lambda"],
+  devDeps: ["@types/aws-lambda", "@types/formidable"],
   // packageName: undefined,  /* The "name" in package.json. */
   context: {
     serviceName: "Transfer",
