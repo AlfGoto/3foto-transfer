@@ -8,6 +8,7 @@ export const LinkEntity = new Entity({
     date: string(), // ISO
     keys: list(string()),
     ttl: number(),
+    creator: string().optional(),
   }),
   computeKey: ({ id }: { id: string }) => ({
     PK: `LINK#${id}`,
