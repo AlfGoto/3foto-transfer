@@ -52,6 +52,8 @@ app.post("/", async (c) => {
       fileKeys = fileKeys.filter((key) => key !== null)
     }
 
+    const creatorId = formData.get("creatorId") as string
+    const creatorName = formData.get("creatorName") as string
     const date = new Date()
     await LinkEntity.build(PutItemCommand)
       .item({
@@ -59,6 +61,8 @@ app.post("/", async (c) => {
         ttl: Math.round(addDays(date, 7).getTime() / 1000),
         id: id,
         keys: fileKeys.filter((e) => e) as string[],
+        creatorId,
+        creatorName,
       })
       .send()
 
