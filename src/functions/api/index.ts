@@ -52,8 +52,10 @@ app.post("/", async (c) => {
       fileKeys = fileKeys.filter((key) => key !== null)
     }
 
-    const creatorId = formData.get("creatorId") as string
-    const creatorName = formData.get("creatorName") as string
+    const creatorId = formData.has("creatorId") ? (formData.get("creatorId") as string) : undefined
+    const creatorName = formData.has("creatorName")
+      ? (formData.get("creatorName") as string)
+      : undefined
     const date = new Date()
     await LinkEntity.build(PutItemCommand)
       .item({
