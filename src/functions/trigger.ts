@@ -25,7 +25,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
           }
 
           const s3Key = `${id}/${key.S}`
-          console.log(`Deleting S3 object: ${s3Key}`)
 
           try {
             await s3.send(
@@ -40,8 +39,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
           }
         })
       )
-
-      console.log(`Processed ${deleteResults.length} keys for item: ${id}`)
     } catch (error) {
       console.error("Error processing DynamoDB stream record:", error)
     }

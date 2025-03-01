@@ -1,16 +1,34 @@
 import { Hono } from "hono"
 import { handle } from "hono/aws-lambda"
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { LinkEntity } from "../../core/link/link.entity"
 import { GetItemCommand, PutItemCommand } from "dynamodb-toolbox"
 import { addDays } from "date-fns"
 import { v4 as uuid } from "uuid"
 import { Readable } from "stream"
+import jwt from "jsonwebtoken"
+import { user } from "./types"
 
 const app = new Hono()
-const s3 = new S3Client({})
+const s3 = new S3Client()
+const secret = "fhu85rg4c6s1c9e84f6r4g6r4v614b4qec"
 
-app.post("/", async (c) => {
+app.get("/favicon.ico", (c) => {
+  return c.notFound()
+})
+
+app.post("/old", async (c) => {
+  const credentials = c.req.header("credentials")
+  let creatorId: string | undefined
+  let creatorName: string | undefined
+
+  if (credentials) {
+    const decoded = jwt.verify(credentials, secret) as user
+    creatorId = decoded.id
+    creatorName = decoded.name
+  }
+
   const id = uuid()
   let fileKeys: (string | null)[] = []
 
@@ -52,10 +70,6 @@ app.post("/", async (c) => {
       fileKeys = fileKeys.filter((key) => key !== null)
     }
 
-    const creatorId = formData.has("creatorId") ? (formData.get("creatorId") as string) : undefined
-    const creatorName = formData.has("creatorName")
-      ? (formData.get("creatorName") as string)
-      : undefined
     const date = new Date()
     await LinkEntity.build(PutItemCommand)
       .item({
@@ -75,7 +89,7 @@ app.post("/", async (c) => {
   }
 })
 
-app.get("/:id", async (c) => {
+app.get("/old/:id", async (c) => {
   const { id } = c.req.param()
   const { Item } = await LinkEntity.build(GetItemCommand)
     .key({ id: id })
@@ -113,6 +127,86 @@ app.get("/:id", async (c) => {
         type: s3Response.ContentType || "application/octet-stream",
         url: `data:${s3Response.ContentType};base64,${fileContent}`,
       }
+    })
+  )
+
+  return c.json(files)
+})
+
+app.post("/", async (c) => {
+  const credentials = c.req.header("credentials")
+  let creatorId: string | undefined
+  let creatorName: string | undefined
+
+  if (credentials) {
+    const decoded = jwt.verify(credentials, secret) as user
+    creatorId = decoded.id
+    creatorName = decoded.name
+  }
+
+  const body = await c.req.json()
+
+  const id = uuid()
+
+  const urls = await Promise.all(
+    body.map(async (file: { name: string; type: string }) => {
+      const key = `${id}/${file.name}`
+
+      const command = new PutObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: key,
+        ContentType: file.type,
+      })
+
+      const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 600 })
+
+      return {
+        filename: file.name,
+        uploadUrl,
+      }
+    })
+  )
+
+  const date = new Date()
+  await LinkEntity.build(PutItemCommand)
+    .item({
+      date: date.toISOString(),
+      ttl: Math.round(addDays(date, 7).getTime() / 1000),
+      id: id,
+      keys: body
+        .map((file: { name: string; type: string }) => file.name)
+        .filter((e: string) => e) as string[],
+      creatorId,
+      creatorName,
+    })
+    .send()
+
+  return c.json({ urls: urls, id: id })
+})
+
+app.get("/:id", async (c) => {
+  const { id } = c.req.param()
+  console.log("id", id)
+
+  const { Item } = await LinkEntity.build(GetItemCommand).key({ id: id }).send()
+
+  if (!Item || !Item.keys) {
+    return c.json(
+      { error: "Invalid item or keys not found", Item: Item, ItemKeys: Item?.keys },
+      400
+    )
+  }
+
+  const files = await Promise.all(
+    Item.keys.map(async (file: string) => {
+      const command = new GetObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: `${Item.id}/${file}`,
+      })
+      const url = await getSignedUrl(s3, command, {
+        expiresIn: 600,
+      })
+      return {url: url, name: file}
     })
   )
 

@@ -10,11 +10,11 @@
       "type": "build"
     },
     {
-      "name": "@types/formidable",
+      "name": "@types/jest",
       "type": "build"
     },
     {
-      "name": "@types/jest",
+      "name": "@types/jsonwebtoken",
       "type": "build"
     },
     {
@@ -95,6 +95,10 @@
       "type": "runtime"
     },
     {
+      "name": "@aws-sdk/s3-request-presigner",
+      "type": "runtime"
+    },
+    {
       "name": "aws-cdk-lib",
       "version": "^2.1.0",
       "type": "runtime"
@@ -118,6 +122,10 @@
     },
     {
       "name": "hono",
+      "type": "runtime"
+    },
+    {
+      "name": "jsonwebtoken",
       "type": "runtime"
     },
     {

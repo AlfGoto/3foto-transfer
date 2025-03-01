@@ -33,9 +33,24 @@ export class Transfer extends cdk.Stack {
       removalPolicy: props.stage === "prod" ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       cors: [
         {
-          allowedMethods: [s3.HttpMethods.GET],
-          allowedOrigins: ["*"],
+          allowedMethods: [
+            s3.HttpMethods.PUT,
+            s3.HttpMethods.HEAD,
+            s3.HttpMethods.GET,
+          ],
+          allowedOrigins: [
+            "http://localhost:3000",
+            "https://dev-3foto.vercel.app",
+            "https://3foto.vercel.app",
+            "https://transfair.vercel.app",
+            "https://dev.transfair.vercel.app",
+          ],
           allowedHeaders: ["*"],
+          exposedHeaders: [
+            "ETag",
+            "Content-Length",
+            "x-amz-server-side-encryption",
+          ],
         },
       ],
     })
@@ -68,10 +83,16 @@ export class Transfer extends cdk.Stack {
 
     const api = new apigw.HttpApi(this, "TransferApi", {
       corsPreflight: {
-        allowHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
+        allowHeaders: ["Content-Type", "credentials", "Cookie"],
         allowMethods: [apigw.CorsHttpMethod.ANY],
-        allowCredentials: false,
-        allowOrigins: ["*"],
+        allowOrigins: [
+          "http://localhost:3000",
+          "https://dev-3foto.vercel.app",
+          "https://3foto.vercel.app",
+          "https://transfair.vercel.app",
+          "https://dev.transfair.vercel.app",
+        ],
+        allowCredentials: true,
       },
     })
     const apiFunction = new ln.NodejsFunction(this, "ApiFunction", {
